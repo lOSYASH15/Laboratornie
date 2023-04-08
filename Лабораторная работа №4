@@ -1,0 +1,216 @@
+
+public class BinarySortTreeDemo {
+    public static void main(String[] args) {
+        int [] arr={7,3,10,12,5,1,9,2};
+        BinarySortTree binarySortTree = new BinarySortTree();
+        for (int i = 0; i < arr.length; i++) {
+            binarySortTree.add(new Node(arr[i]));
+        }
+        // Чтобы пройти по двоичному дереву сортировки
+        binarySortTree.infixOrder();
+
+    }
+}
+class BinarySortTree{// Создаем двоичное дерево сортировки
+    private Node root;
+    /**
+           * Вернуть наименьший узел двоичного дерева сортировки с узлом в качестве корневого узла и удалить наименьший узел
+     */
+    public int deleteRightTreeMin(Node node){
+        Node target=node;
+        // Ищем левый узел в цикле и находим минимум
+        while (target.left!=null){
+            target=target.left;
+        }
+        // Это целевая точка самого маленького узла
+        deleteNode(target.value);//Удалите это
+        return target.value;
+    }
+
+    // Находим узел, который нужно удалить
+    public Node search(int value){
+        if (root==null){
+            return null;
+        }else {
+            return root.search(value);
+        }
+    }
+    // Находим родительский узел удаляемого узла
+    public Node searchParent(int value){
+        if (root==null){
+            return null;
+        }else {
+            return root.searchParent(value);
+        }
+    }
+
+    public void deleteNode(int value){
+        if (root==null){
+            return;
+        }else {
+            Node targetNode = search(value);
+            if (targetNode==null){// Удаляемый узел не найден
+                return;
+            }
+            // Если targetNode не имеет родительского узла
+            if (root.left==null&&root.right==null){
+                root=null;
+            }
+            // Родительский узел targetNode
+            Node parentNode = searchParent(value);
+            // Если удаляемый узел является листовым
+            if (targetNode.left==null&&targetNode.right==null){
+                // Определяем, является ли targetNode левым дочерним узлом или правым дочерним узлом родительского узла
+                if ((parentNode.left!=null)&&(parentNode.left.value==value)){
+                    parentNode.left=null;
+                }else if ((parentNode.right!=null)&&(parentNode.right.value==value)){
+                    parentNode.right=null;
+                }
+            }else if (targetNode.left!=null&&targetNode.right!=null){// Удаляем узлы с двумя поддеревьями
+                int minVal = deleteRightTreeMin(targetNode.right);
+                targetNode.value=minVal;
+            }else {// Удаляем узлы только с одним поддеревом
+                if (targetNode.left!=null){// Есть левое поддерево
+                    if (parentNode!=null){
+                        // Если targetNode - левый дочерний узел parentNode
+                        if (parentNode.left.value==value){
+                            parentNode.left=targetNode.left;
+                        }else {// targetNode - это правый дочерний узел parentNode
+                            parentNode.right=targetNode.left;
+                        }
+                    }else {
+                        root=targetNode.left;
+                    }
+
+                }else {// Есть правое поддерево
+                    if (parentNode!=null){
+                        if (parentNode.left.value==value){
+                            parentNode.left=targetNode.right;
+                        }else {
+                            parentNode.right=targetNode.right;
+                        }
+                    }else {
+                        root=targetNode.right;
+                    }
+
+                }
+            }
+        }
+    }
+
+    // Как добавить узлы
+    public void add(Node node){
+        if (root==null){
+            root=node;// Если корень пуст, пусть корень указывает на узел напрямую
+        }else {
+            root.add(node);
+        }
+    }
+
+    // Обход по порядку
+    public void infixOrder(){
+        if (root!=null){
+            root.infixOrder();
+        }
+        else {
+            System.out.println(«Двоичное дерево сортировки пусто и не может быть пройдено»);
+        }
+    }
+}
+
+class Node{//узел
+    int value;
+    Node left;
+    Node right;
+
+    public Node(int value) {
+        this.value = value;
+    }
+
+    @Override
+    public String toString() {
+        return "Node{" +
+                "value=" + value +
+                '}';
+    }
+
+
+    /**
+           * Найдите узел, который нужно удалить
+           * @param value Значение удаляемого узла
+           * @return Если найдено, вернуть узел, иначе вернуть ноль
+     */
+    public Node search(int value){
+        if (this.value==value){// Узел найден
+            return this;
+        }else if (value<this.value){// Если значение, которое нужно найти, меньше, чем текущий узел, рекурсивно ищем левое поддерево
+            // Если левый дочерний узел пуст
+            if (this.left==null){
+                return null;
+            }
+            return this.left.search(value);
+        }else {
+            // Если правый дочерний узел пуст
+            if (this.right==null){
+                return null;
+            }
+            return this.right.search(value);
+        }
+    }
+
+    /**
+           * Найдите родительский узел удаляемого узла
+           * @param value Значение удаляемого узла
+           * @return Если найдено, вернуть узел, иначе вернуть ноль
+     */
+    public Node searchParent(int value){
+        // Если текущий узел является родительским узлом удаляемого узла, возвращаем
+        if ((this.left!=null&&this.left.value==value)||
+                (this.right!=null&&this.right.value==value)){
+            return this;
+        }else {
+            // Если значение, которое нужно найти, меньше значения текущего узла, а левый узел текущего узла не пуст
+            if (value<this.value&&this.left!=null){
+                return this.left.searchParent(value);// Рекурсивный поиск по левому поддереву
+            }else if (value>=this.value&&this.right!=null){
+                return this.right.searchParent(value);// Рекурсивный поиск по правому поддереву
+            }else {
+                return null;
+            }
+        }
+    }
+
+    // Как добавить узлы
+    public void add(Node node){
+        if (node==null){
+            return;
+        }
+        // Оценка значения входящего узла и отношения между значением узла текущего поддерева
+        if (node.value<this.value){
+            // Если левый дочерний узел текущего узла пуст
+            if (this.left==null){
+                this.left=node;
+            }else {
+                // Рекурсивно добавляем в левое поддерево
+                this.left.add(node);
+            }
+        }else {// Значение добавленного узла больше, чем значение текущего узла
+            if (this.right==null){
+                this.right=node;
+            }else {// Рекурсивно добавляем в правое поддерево
+                this.right.add(node);
+            }
+        }
+    }
+
+    // Обход по порядку
+    public void infixOrder(){
+        if (this.left!=null){
+            this.left.infixOrder();
+        }
+        System.out.println(this);
+        if (this.right!=null){
+            this.right.infixOrder();
+        }
+    }
+}
