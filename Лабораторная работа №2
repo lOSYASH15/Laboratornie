@@ -1,0 +1,33 @@
+// Базовый класс (родительский класс)
+public class Animal {
+    protected String name;
+    protected int age;
+
+    public Animal(String name, int age) {
+        this.name = name;
+        this.age = age;
+    }
+
+    public void makeSound() {
+        System.out.println("Животное издает звук");
+    }
+}
+
+// Подкласс (дочерний класс), наследующийся от Animal
+public class Dog extends Animal {
+    private String breed;
+
+    public Dog(String name, int age, String breed) {
+        super(name, age); // вызов конструктора родительского класса
+        this.breed = breed;
+    }
+
+    public void wagTail() {
+        System.out.println("Поведение: виляет хвостом");
+    }
+}
+
+/*В этом примере класс Dog наследуется от класса Animal. Класс Dog расширяет функциональность класса Animal, добавляя новые поля и методы, такие как breed и wagTail.
+
+При создании экземпляра класса Dog, он будет иметь доступ ко всем полям и методам, которые определены в классе Animal, благодаря наследованию. Таким образом, принцип наследования позволяет создавать иерархии классов и повторно использовать функциональность родительских классов в дочерних классах.
+*/
