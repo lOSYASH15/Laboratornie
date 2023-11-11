@@ -1,40 +1,18 @@
-/*В приведенном примере у нас есть родительский класс `Shape` и два дочерних класса `Circle` и `Rectangle`, которые наследуются от `Shape` и переопределяют его метод `draw()`. В основном классе
-`Main` мы создаем массив из объектов типа `Shape`, присваиваем ему экземпляры классов `Circle` и `Rectangle` и вызываем метод `draw()` для каждого объекта. 
-При выполнении программы каждый вызов метода `draw()` вызывает соответствующую реализацию в классах `Circle` и `Rectangle`, демонстрируя полиморфизм.*/
-// Родительский класс Shape
-class Shape {
-public void draw() {
-System.out.println("Рисуем фигуру");
-}
-}
-
-// Дочерний класс Circle
-class Circle extends Shape {
-@Override
-public void draw() {
-System.out.println("Рисуем круг");
-}
-}
-
-// Дочерний класс Rectangle
-class Rectangle extends Shape {
-@Override
-public void draw() {
-System.out.println("Рисуем прямоугольник");
-}
-}
-
-// Основной класс для демонстрации полиморфизма
-public class Main {
-public static void main(String[] args) {
-// Создаем массив фигур (круг и прямоугольник)
-Shape[] shapes = new Shape[2];
-shapes[0] = new Circle();
-shapes[1] = new Rectangle();
-
-// Вызываем метод draw для каждой фигуры
-for (Shape shape : shapes) {
-shape.draw();
-}
-}
+/*При статическом варианте метод можно вызывать при компиляции кода, происходит это при помощи перегрузки методов. 
+У них будет одинаковое название, но разная функциональность (тип возвращаемых данных, свойств). 
+В таком случае Java позволяет пользователю свободно определять функциям идентичные названия, если они будут отличны по типу и параметрам.*/
+public class Add {
+  void sum(int x, int y) {
+    int z = x + y;
+    System.out.println("Сумма двух чисел:" +z);
+  }
+  void sum(int x, int y, int i) {
+    int z = x + y + i;
+    System.out.println("Сумма трех чисел: " +z);
+  }
+  public static void main(String[] args) {
+    Add myAdd = new Add();
+    myAdd.sum(5, 11);
+    myAdd.sum(1, 8, 11);
+  }
 }
