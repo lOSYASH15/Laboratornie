@@ -1,0 +1,35 @@
+/*В этом примере класс Animal содержит метод makeSound, который переопределяется в классах Dog и Cat. При создании экземпляра класса Dog или Cat, метод makeSound вызывается в соответствии с типом объекта, что демонстрирует полиморфизм. Таким образом, вызов одного и того же метода приводит к различным поведениям в зависимости от конкретного типа объекта.
+
+Полиморфизм позволяет использовать объекты разных классов через общий интерфейс, что упрощает расширение и поддержание кода.*/
+// Родительский класс
+class Animal {
+    public void makeSound() {
+        System.out.println("Животное издает звук");
+    }
+}
+
+// Дочерний класс 1
+class Dog extends Animal {
+    @Override
+    public void makeSound() {
+        System.out.println("Собака лает");
+    }
+}
+
+// Дочерний класс 2
+class Cat extends Animal {
+    @Override
+    public void makeSound() {
+        System.out.println("Кошка мяукает");
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Animal dog = new Dog();
+        Animal cat = new Cat();
+
+        dog.makeSound(); // Вызов переопределенного метода у экземпляра класса Dog
+        cat.makeSound(); // Вызов переопределенного метода у экземпляра класса Cat
+    }
+}
