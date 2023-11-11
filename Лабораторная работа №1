@@ -1,0 +1,24 @@
+//В этом примере метод isValidOperand скрыт от других классов, что позволяет скрыть сложную логику от внешнего мира.
+public class Calculator {
+    public int add(int x, int y) {
+        return x + y;
+    }
+
+    public int subtract(int x, int y) {
+        return x - y;
+    }
+
+    // Допустим, есть сложная логика для проверки корректности операндов
+    private boolean isValidOperand(int x) {
+        return x >= 0;
+    }
+
+    public int safeDivide(int x, int y) {
+        if (isValidOperand(y)) {
+            return x / y;
+        } else {
+            System.out.println("Делитель должен быть неотрицательным!");
+            return 0;
+        }
+    }
+}
