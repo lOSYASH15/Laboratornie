@@ -1,0 +1,65 @@
+// Пример композиции
+class Engine {
+    public void start() {
+        System.out.println("Двигатель запущен");
+    }
+}
+
+class Car {
+    private Engine engine; // Класс Car содержит объект класса Engine
+
+    public Car() {
+        this.engine = new Engine(); // Создаем объект Engine внутри класса Car
+    }
+
+    public void startCar() {
+        engine.start(); // Метод startCar делегирует вызов методу start класса Engine
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Car myCar = new Car();
+        myCar.startCar(); // Запускаем автомобиль, вызывая метод startCar
+    }
+}
+
+/*В этом примере класс Car содержит объект класса Engine. Объект Engine создается в конструкторе Car, и класс Car полностью управляет жизненным циклом объекта Engine. Это называется композицией.*/
+
+//Пример агрегации:
+class Wheel {
+    public void rotate() {
+        System.out.println("Колесо вращается");
+    }
+}
+
+class Car {
+    private Wheel[] wheels; // Класс Car содержит массив объектов класса Wheel
+
+    public Car() {
+        this.wheels = new Wheel[4]; // Создаем массив объектов Wheel
+        for (int i = 0; i < 4; i++) {
+            this.wheels[i] = new Wheel(); // Инициализируем каждый объект Wheel в массиве
+        }
+    }
+
+    public void startCar() {
+        for (Wheel wheel : wheels) {
+            wheel.rotate(); // Каждое колесо начинает вращаться
+        }
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Car myCar = new Car();
+        myCar.startCar(); // Запускаем автомобиль, вызывая метод startCar
+    }
+}
+
+/*В этом примере класс Car содержит массив объектов класса Wheel. Класс Car управляет массивом колес, но каждое колесо может существовать независимо от самой машины. Это называется агрегацией.
+
+Отличие между композицией и агрегацией:
+
+    В композиции, объекты являются частью составного объекта и управляются им. Если композитный объект уничтожается, все его компоненты также уничтожаются.
+    В агрегации, объекты являются независимыми и могут существовать независимо от составного объекта. Если общий объект уничтожается, это не влияет на его компоненты.*/
