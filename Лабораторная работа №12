@@ -1,0 +1,891 @@
+import javax.swing.*;
+import javax.swing.border.BevelBorder;
+import java.awt.*;
+import java.awt.event.*;
+import java.util.*;
+
+class Calculator { //Создается класс Calculator.
+
+    JFrame frmCalculator; //Создается объект JFrame с именем frmCalculator, который будет представлять окно калькулятора.
+    String result="",expression=""; //Создается переменная result, которая будет содержать результат вычислений, и переменная expression, которая будет содержать выражение.
+    ArrayList<String> token=new ArrayList<String>();//Создается массив token, который будет содержать элементы выражения.
+
+    boolean num=false; //Создаются флаги num и dot для обработки чисел и точек.
+    boolean dot=false;
+
+    public static void main(String[] args) { //Создается метод main для запуска программы.
+        EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                try {
+                    Calculator window = new Calculator(); //В методе main создается объект Calculator и отображается окно калькулятора.
+                    window.frmCalculator.setVisible(true);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+
+    Calculator() {
+        initialize();
+    } //Создается конструктор класса Calculator, который вызывает метод initialize.
+
+    int precedence(String x) //Создается метод precedence для определения приоритета операторов.
+    {
+        int p=10;
+        switch(x) {
+            case "+":
+                p=1;
+                break;
+            case "-":
+                p=2;
+                break;
+            case "x":
+                p=3;
+                break;
+            case "/":
+                p=4;
+                break;
+            case "^":
+                p=6;
+                break;
+            case "!":
+                p=7;
+                break;
+        }
+
+        return p;
+    }
+
+    private boolean isoperator(String x) //Создается метод isoperator для проверки, является ли символ оператором.
+    {
+        if(x.equals("+") || x.equals("-") || x.equals("x") || x.equals("/") || x.equals("sqrt") || x.equals("^") || x.equals("!") || x.equals("sin") || x.equals("cos") || x.equals("tan") || x.equals("ln") || x.equals("log"))
+            return true;
+        else
+            return false;
+    }
+
+    private String infixTopostfix() //Создается метод infixTopostfix для преобразования выражения из инфиксной нотации в постфиксную.
+    {
+        Stack<String> s=new Stack<String>(); //Создается стек s и переменные y, flag и p.
+        String y;
+        int flag;
+        String p="";
+        token.add(")"); //Добавляется символ ")" в массив token.
+        s.push("(");//Добавляется символ "(" в стек s.
+        for(String i: token) { /*Проходится циклом по каждому элементу в массиве token. Если элемент равен "(", добавляется в стек s.
+            Если элемент равен ")", извлекается элемент из стека s и добавляется в переменную p, пока не встретится "(". В конце удаляется символ "(" из стека.
+            Если элемент является оператором, извлекается элемент из стека s и добавляется в переменную p, если приоритет оператора в стеке больше приоритета текущего оператора. Затем текущий оператор добавляется в стек s.
+                    Если элемент не является оператором, добавляется в переменную p.
+                    После окончания цикла извлекается оставшийся элемент из стека s и добавляется в переменную p. */
+            if(i.equals("(")){
+                s.push(i);
+            }else if(i.equals(")")){
+                y=s.pop();
+                while(!y.equals("("))
+                {
+                    p=p+y+",";
+                    y=s.pop();
+                }
+            }else if(isoperator(i)){
+                y=s.pop();
+                flag=0;
+                if(isoperator(y) && precedence(y)>precedence(i)){
+                    p=p+y+",";
+                    flag=1;
+                }
+                if(flag==0)
+                    s.push(y);
+
+                s.push(i);
+            }else{
+                p=p+i+",";
+            }
+        }
+        while(!s.empty()) {
+            y=s.pop();
+            if(!y.equals("(") && !y.equals(")")) {
+                p+=y+",";
+            }
+        }
+        return p; //Возвращается переменная p.
+    }
+
+    //Создается метод factorial для вычисления факториала числа.
+    private double factorial(double y) {
+        double fact=1;
+        if(y==0 || y==1) { //Если число равно 0 или 1, факториал равен 1. В противном случае вычисляется факториал числа.
+            fact=1;
+        }else {
+            for(int i=2; i<=y; i++) {
+                fact*=i;
+            }
+        }
+        return fact;
+    }
+
+    //Создается метод calculate для вычисления операций с двумя числами.
+    private double calculate(double x,double y,String c)
+    {
+        double res=0; //В зависимости от оператора вычисляется результат и возвращается. Если оператор неизвестен, возвращается 0.
+        switch(c)
+        {
+            case "-":
+                res= x-y;
+                break;
+            case "+":
+                res= x+y;
+                break;
+            case "x":
+                res= x*y;
+                break;
+            case "/":
+                res= x/y;
+                break;
+            case "^":
+                res= Math.pow(x,y);
+                break;
+            default :
+                res= 0;
+        }
+        return res;
+    }
+
+    //выполняет вычисления для различных математических операций (тригонометрия, факториал, логарифмы), переданных в переменной c. Возвращает результат операции.
+    private double calculate(double y,String c) {
+        double res=0;
+        switch(c) {
+            case "log":
+                res = Math.log10(y);
+                break;
+            case "sin":
+                res= Math.sin(y);
+                break;
+            case "cos":
+                res = Math.cos(y);
+                break;
+            case "tan":
+                res =Math.tan(y);
+                break;
+            case "ln":
+                res= Math.log(y);
+                break;
+            case "sqrt":
+                res= Math.sqrt(y);
+                break;
+            case "!":
+                res=factorial(y);
+                break;
+        }
+        return res;
+    }
+
+    private double Eval(String p) //Метод Eval(String p) разбивает строку p на токены и сохраняет их в ArrayList token2. Затем используя стек s и метод calculate, вычисляет результат выражения, представленного в виде обратной польской записи.
+    {
+        String tokens[] = p.split(",");
+        ArrayList<String> token2=new ArrayList<String>();
+        for(int i=0; i<tokens.length; i++) {
+            if(! tokens[i].equals("") && ! tokens[i].equals(" ") && ! tokens[i].equals("\n") && ! tokens[i].equals("  ")) {
+                token2.add(tokens[i]);  // токены из формы post fix p фактические токены для расчета
+            }
+        }
+
+        Stack<Double> s=new Stack<Double>();
+        double x,y;
+        for(String  i:token2) {
+            if(isoperator(i)){
+                //если это унарный оператор или функция
+                if(i.equals("sin") ||i.equals("cos") ||i.equals("tan") ||i.equals("log") || i.equals("ln") || i.equals("sqrt") || i.equals("!")) {
+                    y=s.pop();
+                    s.push(calculate(y,i));
+                }else {
+                    //для бинарных операторов
+                    y=s.pop();
+                    x=s.pop();
+                    s.push(calculate(x,y,i));
+                }
+            }else{
+                if(i.equals("pi"))
+                    s.push(Math.PI);
+                else if(i.equals("e"))
+                    s.push(Math.E);
+                else
+                    s.push(Double.valueOf(i));
+            }
+        }
+        double res=1;
+        while(!s.empty()) {
+            res*=s.pop();
+        }
+        return res;  //Финальный результат
+    }
+
+    //Метод calculateMain() разбивает строку expression на токены и сохраняет их в ArrayList token. Затем вызывает метод Eval для вычисления результата выражения. Результат сохраняется в переменной result в виде строки.
+    private void calculateMain() {
+        String tokens[]=expression.split(",");
+        for(int i=0; i<tokens.length; i++) {
+            if(! tokens[i].equals("") && ! tokens[i].equals(" ") && ! tokens[i].equals("\n") && ! tokens[i].equals("  ")) {
+                token.add(tokens[i]);  //добавление токена в список массива токенов из выражения
+            }
+        }
+        try {
+            double res = Eval(infixTopostfix());
+            result= Double.toString(res);
+        }catch(Exception e) {}
+    }
+
+    private void initialize() { // Создание основного окна программы с настройками
+        frmCalculator = new JFrame();
+        frmCalculator.setResizable(false); // Запрет изменения размера окна
+        frmCalculator.setTitle("ЕльБоги"); // Установка заголовка окна
+        frmCalculator.getContentPane().setBackground(new Color(48, 186, 143)); // Установка фона окна
+        frmCalculator.getContentPane().setFont(new Font("Calibri", Font.PLAIN, 15)); // Установка шрифта окна
+        frmCalculator.getContentPane().setForeground(SystemColor.windowBorder);
+        frmCalculator.getContentPane().setLayout(null); // Установка расположения элементов в окне
+// Создание панели для текстового поля
+        JPanel textPanel = new JPanel();
+        textPanel.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
+        textPanel.setBounds(34, 25, 316, 80);
+        frmCalculator.getContentPane().add(textPanel);
+        textPanel.setLayout(null);
+// Создание метки для отображения выражения
+        JLabel exprlabel = new JLabel("");
+        exprlabel.setBackground(SystemColor.control);
+        exprlabel.setFont(new Font("Yu Gothic UI Light", Font.PLAIN, 20));
+        exprlabel.setHorizontalAlignment(SwingConstants.RIGHT);
+        exprlabel.setForeground(UIManager.getColor("Button.disabledForeground"));
+        exprlabel.setBounds(2, 2, 312, 27);
+        textPanel.add(exprlabel);
+// Создание текстового поля для ввода чисел и выражений
+        JTextField textField = new JTextField();
+        exprlabel.setLabelFor(textField);
+        textField.setHorizontalAlignment(SwingConstants.RIGHT);
+        textField.setBackground(SystemColor.control);
+        textField.setEditable(false);
+        textField.setText("0");
+        textField.setBorder(null);
+        textField.setFont(new Font("Yu Gothic UI Light", textField.getFont().getStyle(), 32));
+        textField.setBounds(2, 30, 312, 49);
+        textPanel.add(textField);
+        textField.setColumns(10);
+// Создание панели с кнопками
+        JPanel butttonPanel = new JPanel();
+        butttonPanel.setBorder(new BevelBorder(BevelBorder.LOWERED, null, null, null, null));
+        butttonPanel.setBackground(SystemColor.inactiveCaptionBorder);
+        butttonPanel.setBounds(34, 120, 316, 322);
+        frmCalculator.getContentPane().add(butttonPanel);
+        butttonPanel.setLayout(new GridLayout(0, 5, 0, 0));
+
+//кнопка для очистки поля
+        JButton button1 = new JButton("C");
+        button1.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                textField.setText("0");
+                exprlabel.setText("");
+                expression ="";
+                token.clear();
+                result="";
+                num=false;
+                dot=false;
+            }
+        });
+        button1.setFont(new Font("Calibri Light", Font.PLAIN, 17));
+        butttonPanel.add(button1);
+
+//Создание кнопки "DEL" и добавление слушателя действий ActionListener. При нажатии на кнопку происходит удаление последнего символа из текстового поля textField. Если удаленный символ является точкой или запятой, соответствующие флаги dot и expression также обновляются. Если после удаления текстовое поле становится пустым, то текстовое поле устанавливается в значение "0", а expression сбрасывается.
+        JButton button2 = new JButton("DEL");
+        button2.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                String s=textField.getText();
+                if(s != "0" && s.length() > 1) {
+                    String newString = s.substring(0,s.length()-1);
+                    textField.setText(newString);
+                    if(expression.charAt(expression.length()-1)=='.') {
+                        dot=false;
+                    }
+                    if(expression.charAt(expression.length()-1) == ',') {
+                        expression = expression.substring(0,expression.length()-2);
+                    }else {
+                        expression = expression.substring(0,expression.length()-1);
+                    }
+                }else {
+                    textField.setText("0");
+                    expression="";
+                }
+            }
+        });
+        button2.setFont(new Font("Calibri Light", Font.PLAIN, 14));
+        butttonPanel.add(button2);
+//Создание кнопки "π" и добавление слушателя действий ActionListener. При нажатии на кнопку символ "π" добавляется к тексту в текстовом поле textField. Значение expression также обновляется. Флаги num и dot устанавливаются в false.
+        JButton button3 = new JButton("<html><body><span>π</span></body></html>");
+        button3.setFont(new Font("Calibri Light", Font.PLAIN, 17));
+        button3.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if(! "0".equals(textField.getText())) {
+                    textField.setText(textField.getText()+Character.toString((char)960));
+                }else {
+                    textField.setText(Character.toString((char)960));
+                }
+                expression += ",pi";
+                num=false;
+                dot=false;
+            }
+        });
+        butttonPanel.add(button3);
+ //Создание кнопки "X^y" и добавление слушателя действий ActionListener. При нажатии на кнопку символ "^" добавляется к тексту в текстовом поле textField. Значение expression также обновляется. Если текстовое поле пустое, то "0^" добавляется к тексту и expression. Флаги num и dot устанавливаются в false.
+        JButton button4 = new JButton("<html><body><span>X<sup>y</sup></span></body></html>");
+        button4.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if(! "0".equals(textField.getText())) {
+                    textField.setText(textField.getText()+"^");
+                    expression+=",^";
+                }else {
+                    textField.setText("0^");
+                    expression += ",0,^";
+                }
+                num=false;
+                dot=false;
+            }
+        });
+        button4.setFont(new Font("Calibri Light", Font.PLAIN, 17));
+        butttonPanel.add(button4);
+
+//Создание кнопки "x!" и добавление слушателя действий ActionListener. При нажатии на кнопку символ "!" добавляется к тексту в текстовом поле textField. Значение expression также обновляется. Если текстовое поле пустое, то "0!" добавляется к тексту и expression. Флаги num и dot устанавливаются в false.
+        JButton buttton5 = new JButton("x!");
+        buttton5.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if(! "0".equals(textField.getText())) {
+                    textField.setText(textField.getText()+"!");
+                    expression+=",!";
+                }else {
+                    textField.setText("0!");
+                    expression+=",0,!";
+                }
+                num=false;
+                dot=false;
+            }
+        });
+        buttton5.setFont(new Font("Calibri Light", Font.PLAIN, 17));
+        butttonPanel.add(buttton5);
+
+//Создание кнопки "sin" и добавление слушателя действий ActionListener. При нажатии на кнопку символ "sin(" добавляется к тексту в текстовом поле textField. Значение expression также обновляется. Значения флагов num и dot устанавливаются в false.
+        JButton button6 = new JButton("sin");
+        button6.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if(! "0".equals(textField.getText())) {
+                    textField.setText(textField.getText()+"sin(");
+                }else {
+                    textField.setText("sin(");
+                }
+                expression+=",sin,(";
+                num=false;
+                dot=false;
+            }
+        });
+        button6.setFont(new Font("Calibri Light", Font.PLAIN, 17));
+        butttonPanel.add(button6);
+//Создание кнопки "(" и добавление слушателя действий ActionListener. При нажатии на кнопку символ "(" добавляется к тексту в текстовом поле textField. Значение expression также обновляется. Флаги num и dot устанавливаются в false.
+        JButton button7 = new JButton("(");
+        button7.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if(! "0".equals(textField.getText())) {
+                    textField.setText(textField.getText()+"(");
+                }else {
+                    textField.setText("(");
+                }
+                expression+=",(";
+                num=false;
+                dot=false;
+            }
+        });
+        button7.setFont(new Font("Calibri Light", Font.PLAIN, 17));
+        butttonPanel.add(button7);
+//Создание кнопки ")" и добавление слушателя действий ActionListener. При нажатии на кнопку символ ")" добавляется к тексту в текстовом поле textField. Значение expression также обновляется. Флаги num и dot устанавливаются в false.
+        JButton button8 = new JButton(")");
+        button8.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if(! "0".equals(textField.getText())) {
+                    textField.setText(textField.getText()+")");
+                }else {
+                    textField.setText(")");
+                }
+                expression+=",)";
+                num=false;
+                dot=false;
+            }
+        });
+        button8.setFont(new Font("Calibri Light", Font.PLAIN, 17));
+        butttonPanel.add(button8);
+//Создание кнопки "e" и добавление слушателя действий ActionListener. При нажатии на кнопку символ "e" добавляется к тексту в текстовом поле textField. Значение expression также обновляется. Флаги num и dot устанавливаются в false.
+        JButton button9 = new JButton("e");
+        button9.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if(! "0".equals(textField.getText())) {
+                    textField.setText(textField.getText()+"e");
+                }else {
+                    textField.setText("e");
+                }
+                expression+=",e";
+                num=false;
+                dot=false;
+            }
+        });
+        button9.setFont(new Font("Calibri Light", Font.PLAIN, 17));
+        butttonPanel.add(button9);
+
+//Создание кнопки button10 с символом корня и добавление слушателя событий на нее.
+        JButton button10 = new JButton("<html><body><span>√</span></body></html>");
+        button10.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if(! "0".equals(textField.getText())) { //Внутри слушателя событий проверяется, если текстовое поле не равно "0", то к текстовому полю добавляется символ корня. Иначе, в текстовое поле записывается только символ корня.
+                    textField.setText(textField.getText()+Character.toString((char)8730));
+                }else {
+                    textField.setText(Character.toString((char)8730));
+                }
+                expression+=",sqrt"; //После выполнения действия, добавляется в строку expression символ ",sqrt" для дальнейшего использования в вычислениях.
+                num=false;
+                dot=false; //После нажатия на кнопку, переменные num и dot устанавливаются в false.
+            }
+        });
+        button10.setFont(new Font("Calibri Light", Font.PLAIN, 17));
+        butttonPanel.add(button10);
+
+        JButton button11 = new JButton("cos"); //Создание кнопки button11 с надписью "cos" и добавление слушателя событий на нее.
+        button11.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if(! "0".equals(textField.getText())) { //Внутри слушателя событий проверяется, если текстовое поле не равно "0", то к текстовому полю добавляется строка "cos(". Иначе, в текстовое поле записывается только строка "cos(".
+                    textField.setText(textField.getText()+"cos(");
+                }else {
+                    textField.setText("cos(");
+                }
+                expression+=",cos,("; // После выполнения действия, добавляется в строку expression строка ",cos,(" для дальнейшего использования в вычислениях.
+                num=false; //После нажатия на кнопку, переменные num и dot устанавливаются в false.
+                dot=false;
+            }
+        });
+        button11.setFont(new Font("Calibri Light", Font.PLAIN, 17));
+        butttonPanel.add(button11);
+
+        JButton button12 = new JButton("7"); //Создание кнопки button12 с надписью "7" и добавление слушателя событий на нее.
+        button12.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if(! "0".equals(textField.getText())) { //Внутри слушателя событий проверяется, если текстовое поле не равно "0", то к текстовому полю добавляется цифра "7". Иначе, в текстовое поле записывается только цифра "7".
+                    textField.setText(textField.getText()+"7");
+                }else {
+                    textField.setText("7");
+                }
+                if(num) {
+                    expression+="7"; //После выполнения действия, добавляется в строку expression цифра "7" для дальнейшего использования в вычислениях.
+                }else {
+                    expression+=",7";
+                }
+                num=true; //После нажатия на кнопку, переменная num устанавливается в true.
+            }
+        });
+        button12.setBackground(new Color(220, 220, 220));
+        button12.setFont(new Font("Calibri Light", Font.PLAIN, 17));
+        butttonPanel.add(button12);
+
+        JButton button13 = new JButton("8"); //Создание кнопки button13 с надписью "8" и добавление слушателя событий на нее.
+        button13.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if(! "0".equals(textField.getText())) { //Внутри слушателя событий проверяется, если текстовое поле не равно "0", то к текстовому полю добавляется цифра "8". Иначе, в текстовое поле записывается только цифра "8".
+                    textField.setText(textField.getText()+"8");
+                }else {
+                    textField.setText("8");
+                }
+                if(num) {
+                    expression+="8"; //После выполнения действия, добавляется в строку expression цифра "8" для дальнейшего использования в вычислениях.
+                }else {
+                    expression+=",8";
+                }
+                num=true; //После нажатия на кнопку, переменная num устанавливается в true.
+            }
+        });
+        button13.setBackground(new Color(220, 220, 220));
+        button13.setFont(new Font("Calibri Light", Font.PLAIN, 17));
+        butttonPanel.add(button13);
+
+        JButton button14 = new JButton("9"); //Создание кнопки button14 с надписью "9" и добавление слушателя событий на нее.
+        button14.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if(! "0".equals(textField.getText())) { //Внутри слушателя событий проверяется, если текстовое поле не равно "0", то к текстовому полю добавляется цифра "9". Иначе, в текстовое поле записывается только цифра "9".
+                    textField.setText(textField.getText()+"9");
+                }else {
+                    textField.setText("9");
+                }
+                if(num) {
+                    expression+="9"; //После выполнения действия, добавляется в строку expression цифра "9" для дальнейшего использования в вычислениях.
+                }else {
+                    expression+=",9";
+                }
+                num=true; //После нажатия на кнопку, переменная num устанавливается в true.
+            }
+        });
+        button14.setBackground(new Color(220, 220, 220));
+        button14.setFont(new Font("Calibri Light", Font.PLAIN, 17));
+        butttonPanel.add(button14);
+
+
+        //Создание кнопки button15 с символом деления и добавление слушателя событий на нее.
+        JButton button15 = new JButton("<html><body><span>÷</span></body></html>");
+        button15.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                String s=textField.getText();
+                if(s.equals("0")) { /*
+
+    Внутри слушателя событий происходит следующее:
+
+    Получение текста из текстового поля.
+    Если текст равен "0", то в строку expression добавляется цифра "0".
+    Если последний символ в тексте является символом "-", "x" или "+",
+    то строка newText создается без последнего символа.
+    Затем в текстовое поле устанавливается новая строка с символом деления,
+    а в строку expression записывается новая строка без последнего символа и символ деления.*/
+                    expression+="0";
+                }
+                if(s.charAt(s.length()-1)== '-' || s.charAt(s.length()-1)== 'x' || s.charAt(s.length()-1) == '+') {
+                    String newString = s.substring(0,s.length()-1);
+                    textField.setText(newString+Character.toString((char)247));
+                    expression = expression.substring(0,expression.length()-1);
+                    expression += "/";
+                }else if(s.charAt(s.length()-1)!= (char)247) {
+                    textField.setText(s+Character.toString((char)247));
+                    expression+=",/";
+                }else {
+                    textField.setText(s);
+                }
+                num=false;
+                dot=false;
+            }
+        });
+        button15.setFont(new Font("Calibri Light", Font.PLAIN, 17));
+        butttonPanel.add(button15);
+
+        JButton button16 = new JButton("tan"); //Создается кнопка "tan" с надписью "tan".
+        button16.addActionListener(new ActionListener() { //Добавляется слушатель события нажатия на кнопку.
+            public void actionPerformed(ActionEvent e) {
+                if(! "0".equals(textField.getText())) { //При нажатии на кнопку, если текст в поле ввода отличается от "0", то к тексту в поле добавляется "tan(", иначе в поле ввода записывается "tan(".
+                    textField.setText(textField.getText()+"tan(");
+                }else {
+                    textField.setText("tan(");
+                }
+                expression+=",tan,("; //Добавляется строка ",tan,(" к выражению в поле expression.
+                num=false; //Устанавливается значение переменной num в false и переменной dot в false.
+                dot=false;
+            }
+        });
+        button16.setFont(new Font("Calibri Light", Font.PLAIN, 17)); //Задается шрифт для кнопки.
+        butttonPanel.add(button16); //Кнопка добавляется на панель кнопок.
+
+        JButton button17 = new JButton("4"); //Создание кнопки button14 с надписью "4" и добавление слушателя событий на нее.
+        button17.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if(! "0".equals(textField.getText())) { ////Внутри слушателя событий проверяется, если текстовое поле не равно "0", то к текстовому полю добавляется цифра "4". Иначе, в текстовое поле записывается только цифра "4".
+                    textField.setText(textField.getText()+"4");
+                }else {
+                    textField.setText("4");
+                }
+                if(num) {
+                    expression+="4";
+                }else {
+                    expression+=",4"; //После выполнения действия, добавляется в строку expression цифра "4" для дальнейшего использования в вычислениях.
+                }
+                num=true; //После нажатия на кнопку, переменная num устанавливается в true.
+            }
+        });
+        button17.setBackground(new Color(220, 220, 220));
+        button17.setFont(new Font("Calibri Light", Font.PLAIN, 17));
+        butttonPanel.add(button17);
+
+        JButton button18 = new JButton("5"); //Создание кнопки button14 с надписью "5" и добавление слушателя событий на нее.
+        button18.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if(! "0".equals(textField.getText())) { ////Внутри слушателя событий проверяется, если текстовое поле не равно "0", то к текстовому полю добавляется цифра "5". Иначе, в текстовое поле записывается только цифра "5".
+                    textField.setText(textField.getText()+"5");
+                }else {
+                    textField.setText("5");
+                }
+                if(num) {
+                    expression+="5";
+                }else {
+                    expression+=",5"; //После выполнения действия, добавляется в строку expression цифра "5" для дальнейшего использования в вычислениях.
+                }
+                num=true; //После нажатия на кнопку, переменная num устанавливается в true.
+            }
+        });
+        button18.setBackground(new Color(220, 220, 220));
+        button18.setFont(new Font("Calibri Light", Font.PLAIN, 17));
+        butttonPanel.add(button18);
+
+        JButton button19 = new JButton("6"); //Создание кнопки button14 с надписью "6" и добавление слушателя событий на нее.
+        button19.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if(! "0".equals(textField.getText())) { //Внутри слушателя событий проверяется, если текстовое поле не равно "0", то к текстовому полю добавляется цифра "6". Иначе, в текстовое поле записывается только цифра "6".
+                    textField.setText(textField.getText()+"6");
+                }else {
+                    textField.setText("6");
+                }
+                if(num) {
+                    expression+="6";
+                }else {
+                    expression+=",6"; //После выполнения действия, добавляется в строку expression цифра "6" для дальнейшего использования в вычислениях.
+                }
+                num=true; //После нажатия на кнопку, переменная num устанавливается в true.
+            }
+        });
+        button19.setBackground(new Color(220, 220, 220));
+        button19.setFont(new Font("Calibri Light", Font.PLAIN, 17));
+        butttonPanel.add(button19);
+
+        JButton button20 = new JButton("x"); // Создание кнопки button20 с надписью "x"
+        button20.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+
+                String s=textField.getText(); // Получение текста из текстового поля
+                if(s.equals("0")) { // Если текст равен "0"
+                    expression+="0"; // Добавляем "0" к выражению
+                }
+                if(s.charAt(s.length()-1)== '-' || s.charAt(s.length()-1)== '+' || s.charAt(s.length()-1) == (char)(247)) { // Если последний символ в тексте является "-", "+", или символом деления
+                    String newString = s.substring(0,s.length()-1); // Создаем новую строку без последнего символа
+                    newString += "x"; // Добавляем символ "x" в конец новой строки
+                    textField.setText(newString); // Устанавливаем новую строку в текстовое поле
+                    expression = expression.substring(0,expression.length()-1); // Удаляем последний символ из выражения
+                    expression += "x"; // Добавляем символ "x" в конец выражения
+                }else if(s.charAt(s.length()-1)!= 'x') { // Если последний символ в тексте не является "x"
+                    s += "x"; // Добавляем символ "x" в конец текста
+                    textField.setText(s); // Устанавливаем новый текст в текстовое поле
+                    expression+=",x"; // Добавляем ",x" к выражению
+                }else {
+                    textField.setText(s); // Если ни одно из условий не выполнено, оставляем текущий текст в текстовом поле без изменений
+                }
+                num=false; // Сбрасываем флаг num
+                dot=false; // Сбрасываем флаг dot
+            }
+        });
+        button20.setFont(new Font("Calibri Light", Font.PLAIN, 17));
+        butttonPanel.add(button20);
+
+        JButton button21 = new JButton("ln"); // Создание кнопки button21 с надписью "ln"
+        button21.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if(! "0".equals(textField.getText())) {  // Если текст в текстовом поле не равен "0"
+                    textField.setText(textField.getText()+"ln("); // Добавляем "ln(" в конец текста в текстовом поле
+                }else {
+                    textField.setText("ln(");  // Устанавливаем текст "ln(" в текстовое поле
+                }
+                expression+=",ln,("; // Добавляем ",ln,(" к выражению
+                num=false; // Сбрасываем флаг num
+                dot=false; // Сбрасываем флаг dot
+            }
+        });
+        button21.setFont(new Font("Calibri Light", Font.PLAIN, 17));
+        butttonPanel.add(button21);
+
+        JButton button22 = new JButton("1");  ////Создание кнопки button14 с надписью "1" и добавление слушателя событий на нее.
+        button22.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if(! "0".equals(textField.getText())) { //Внутри слушателя событий проверяется, если текстовое поле не равно "0", то к текстовому полю добавляется цифра "1". Иначе, в текстовое поле записывается только цифра "1".
+                    textField.setText(textField.getText()+"1");
+                }else {
+                    textField.setText("1");
+                }
+                if(num) {
+                    expression+="1";
+                }else {
+                    expression+=",1"; //После выполнения действия, добавляется в строку expression цифра "1" для дальнейшего использования в вычислениях.
+                }
+                num=true; //После нажатия на кнопку, переменная num устанавливается в true.
+            }
+        });
+        button22.setBackground(new Color(220, 220, 220));
+        button22.setFont(new Font("Calibri Light", Font.PLAIN, 17));
+        butttonPanel.add(button22);
+
+        JButton button23 = new JButton("2"); //Создание кнопки button14 с надписью "2" и добавление слушателя событий на нее.
+        button23.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if(! "0".equals(textField.getText())) { //Внутри слушателя событий проверяется, если текстовое поле не равно "0", то к текстовому полю добавляется цифра "2". Иначе, в текстовое поле записывается только цифра "2".
+                    textField.setText(textField.getText()+"2");
+                }else {
+                    textField.setText("2");
+                }
+                if(num) {
+                    expression+="2";
+                }else {
+                    expression+=",2"; //После выполнения действия, добавляется в строку expression цифра "2" для дальнейшего использования в вычислениях.
+                }
+                num=true; //После нажатия на кнопку, переменная num устанавливается в true.
+            }
+        });
+        button23.setBackground(new Color(220, 220, 220));
+        button23.setFont(new Font("Calibri Light", Font.PLAIN, 17));
+        butttonPanel.add(button23);
+
+        JButton button24 = new JButton("3"); //Создание кнопки button14 с надписью "3" и добавление слушателя событий на нее.
+        button24.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if(! "0".equals(textField.getText())) { //Внутри слушателя событий проверяется, если текстовое поле не равно "0", то к текстовому полю добавляется цифра "3". Иначе, в текстовое поле записывается только цифра "3".
+                    textField.setText(textField.getText()+"3");
+                }else {
+                    textField.setText("3");
+                }
+                if(num) {
+                    expression+="3";
+                }else {
+                    expression+=",3"; //После выполнения действия, добавляется в строку expression цифра "3"для дальнейшего использования в вычислениях.
+                }
+                num=true; //После нажатия на кнопку, переменная num устанавливается в true.
+            }
+        });
+        button24.setBackground(new Color(220, 220, 220));
+        button24.setFont(new Font("Calibri Light", Font.PLAIN, 17));
+        butttonPanel.add(button24);
+
+        JButton button25 = new JButton("-"); // Создание кнопки с надписью "-"
+        button25.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                String s=textField.getText(); // Получение текста из текстового поля
+                if(s.equals("0")) { // Если текст равен "0"
+                    expression+="0"; // Добавляем "0" к выражению
+                }
+                if(s.charAt(s.length()-1)== '+') {  // Если последний символ в тексте является "+"
+                    String newString = s.substring(0,s.length()-1); // Создаем новую строку без последнего символа
+                    newString += "-"; // Добавляем символ "-" в конец новой строки
+                    expression = expression.substring(0,expression.length()-1); // Удаляем последний символ из выражения
+                    expression += "-"; // Добавляем символ "-" в конец выражения
+                    textField.setText(newString); // Устанавливаем новую строку в текстовое поле
+                }else if(s.charAt(s.length()-1)!= '-') { // Если последний символ в тексте не является "-"
+                    s += "-"; // Добавляем символ "-" в конец текста
+                    textField.setText(s); // Устанавливаем новый текст в текстовое поле
+                    expression += ",-"; // Добавляем ",-" к выражению
+                }else {
+                    textField.setText(s); // Если ни одно из условий не выполнено, оставляем текущий текст в текстовом поле без изменений
+                }
+                num=false; // Сбрасываем флаг num
+                dot=false; // Сбрасываем флаг dot
+            }
+        });
+        button25.setFont(new Font("Calibri Light", Font.BOLD, 23));
+        butttonPanel.add(button25); // Добавление кнопки button25 на панель butttonPanel
+
+        JButton button26 = new JButton("<html><body><span>log<sub>10</sub></span></body></html>"); //// Создание кнопки button26 с HTML форматированием для надписи "log10"
+        button26.setFont(new Font("Calibri Light", Font.PLAIN, 17)); // Установка шрифта для кнопки button26
+        button26.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if(! "0".equals(textField.getText())) { // Если текст в текстовом поле не равен "0"
+                    textField.setText(textField.getText()+"log("); // Добавляем "log(" в конец текста в текстовом поле
+                }else {
+                    textField.setText("log("); // Устанавливаем текст "log(" в текстовое поле
+                }
+                expression+=",log,("; // Добавляем ",log,(" к выражению
+                num=false;  // Сбрасываем флаг num
+                dot=false;  // Сбрасываем флаг dot
+            }
+        });
+        butttonPanel.add(button26); // Добавление кнопки button26 на панель butttonPanel
+
+        JButton button27 = new JButton("."); // Создание кнопки с надписью "."
+        button27.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                String s=textField.getText(); // Получение текста из текстового поля
+                if(s.charAt(s.length()-1)!= '.') { // Если последний символ в тексте не является "."
+                    if(num && dot==false) { // Если флаг num установлен в true и флаг dot установлен в false
+                        expression+="."; // Добавляем "." к выражению
+                        s += "."; // Добавляем "." к тексту
+                    }else if(num==false && dot ==false){ // Если флаг num установлен в false и флаг dot установлен в false
+                        expression+=",."; // Добавляем ",." к выражению
+                        s += "."; // Добавляем "." к тексту
+                    }
+                }
+                num=true; // Устанавливаем флаг num в true
+                dot=true; // Устанавливаем флаг dot в true
+                textField.setText(s); // Устанавливаем новый текст в текстовое поле
+            }
+        });
+        button27.setFont(new Font("Calibri Light", Font.PLAIN, 17));
+        butttonPanel.add(button27);
+
+        JButton button28 = new JButton("0"); //Создание кнопки button14 с надписью "0"и добавление слушателя событий на нее.
+        button28.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                if("0".equals(textField.getText())) {
+                    textField.setText("0");
+                }else {
+                    textField.setText(textField.getText()+"0");
+                    if(num) {
+                        expression+="0";
+                    }
+                    else {
+                        expression+=",0"; //После выполнения действия, добавляется в строку expression цифра "0"для дальнейшего использования в вычислениях.
+                    }
+                }
+                num=true; //После нажатия на кнопку, переменная num устанавливается в true.
+            }
+        });
+        button28.setBackground(new Color(220, 220, 220));
+        button28.setFont(new Font("Calibri Light", Font.PLAIN, 17));
+        butttonPanel.add(button28);
+
+
+        //В комментарии указано, что данный код активируется при нажатии на кнопку с надписью "=".
+        JButton button29 = new JButton("="); //Создается кнопка button29 с надписью "=", ей присваивается слушатель действий, который вызывает метод calculateMain().
+        button29.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                calculateMain();
+                String s=""; //Затем создается строка s, в которую будут добавляться символы в соответствии с текщими элементами списка token.
+                token.remove(token.size()-1);
+                for(String i: token) {
+                    if(i.equals("/")) { //Если текущий элемент списка равен "/", то добавляется символ деления (знак операции).
+                        s+=Character.toString((char)247);
+                    }else if(i.equals("sqrt")) { //Если текущий элемент списка равен "sqrt", то добавляется символ корня.
+                        s+=Character.toString((char)8730);
+                    }else if(i.equals("pi")) { //Если текущий элемент списка равен "pi", то добавляется символ пи.
+                        s+=Character.toString((char)960);
+                    }else {
+                        s+=i; //В противном случае добавляется текущий элемент списка.
+                    }
+                }
+                exprlabel.setText(s+"="); //Затем к строке s добавляется "=", и она устанавливается в качестве текста для exprlabel (некоторой метки).
+                textField.setText(result); //Присваивается текстовое значение result для textField (текстового поля).
+
+                expression = result;//Значение expression заменяется на значение result.
+                dot=true; //Устанавливаются флаги dot и num в true. Список token очищается.
+                num=true;
+                token.clear();
+            }
+        });
+        button29.setBackground(Color.ORANGE);
+        button29.setFont(new Font("Calibri Light", Font.PLAIN, 22));
+        butttonPanel.add(button29);
+
+        JButton button30 = new JButton("+"); //Затем создается кнопка button30 с надписью "+", ей присваивается слушатель действий.
+        button30.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                String s=textField.getText(); //Создается строка s, которая получает текстовое значение из textField.
+                if(s.equals("0")) {
+                    expression+="0";
+                }
+                if(s.charAt(s.length()-1)== '-' || s.charAt(s.length()-1)== 'x' || s.charAt(s.length()-1) == (char)(247)) { //Если последний символ строки равен '-', 'x' или '/', то создается новая строка, в которой все символы кроме последнего заменяются на '+'. Значение textField устанавливается новой строкой.
+                    String newString = s.substring(0,s.length()-1);
+                    newString += "+";
+                    textField.setText(newString);
+                    expression = expression.substring(0,expression.length()-1);
+                    expression += "+";
+                }else if(s.charAt(s.length()-1)!= '+') {
+                    s += "+";
+                    textField.setText(s); //Если последний символ строки s не равен '+', то к строке s добавляется '+'. Текст textField устанавливается равным s.Если последний символ строки s равен '+', то происходит только обновление текста textField без изменений.
+                    expression+=",+";
+                }else {
+                    textField.setText(s);
+                }
+                num=false; //Флаги num и dot устанавливаются в false.
+                dot=false;
+            }
+        });
+        button30.setFont(new Font("Calibri Light", Font.PLAIN, 17)); //Далее задается размер и положение окна frmCalculator и указывается, что оно закроется при нажатии на кнопку закрытия окна.
+        butttonPanel.add(button30);
+        frmCalculator.setBounds(200, 100, 400, 500);
+        frmCalculator.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    }
+}
