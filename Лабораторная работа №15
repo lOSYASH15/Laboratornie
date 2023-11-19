@@ -1,0 +1,65 @@
+Пример 1
+// Пример полярного расположения компонентов - BorderLayout
+
+import java.awt.*;
+import javax.swing.*;
+
+class BorderLayoutTest extends JFrame
+{
+    public BorderLayoutTest()
+    {
+        super("BorderLayoutTest");
+        setDefaultCloseOperation( EXIT_ON_CLOSE );
+        setSize(250, 250);
+        // Панель содержимого
+        Container container = getContentPane();
+        /*
+         *  Размещаем в панели компоненты
+         *  В качестве параметров можно использовать
+         *  строки и константы класса BorderLayout
+         */
+        container.add(new JButton("Север" ), "North");
+        container.add(new JButton("Юг"    ), "South");
+        container.add(new JLabel ("Запад" ), BorderLayout.WEST);
+        container.add(new JLabel ("Восток"), BorderLayout.EAST);
+        // При отсутствии 2-го параметра компонент размещается в центре
+        container.add(new JButton("Центр"));
+        // Открываем окно
+        setVisible(true);
+    }
+    public static void main(String[] args)
+    {
+        new BorderLayoutTest();
+    }
+}
+Пример 2
+// Пример последовательного расположения компонентов - FlowLayout
+
+import java.awt.*;
+import javax.swing.*;
+
+class FlowLayoutTest extends JFrame
+{
+    public FlowLayoutTest()
+    {
+        super("FlowLayout");
+        setDefaultCloseOperation( EXIT_ON_CLOSE );
+        setSize(300, 120);
+        // Панель содержимого
+        Container container = getContentPane();
+        /*
+         * Определение последовательного расположения
+         * с выравниванием компонентов по центру
+         */
+        container.setLayout (new FlowLayout(FlowLayout.CENTER));
+        // добавляем компоненты
+        container.add( new JButton("Ребёнок"   ));
+        container.add( new JButton("Подросток"));
+        container.add( new JButton("Взрослый"));
+        // Открываем окно
+        setVisible(true);
+    }
+    public static void main(String[] args) {
+        new FlowLayoutTest();
+    }
+}
