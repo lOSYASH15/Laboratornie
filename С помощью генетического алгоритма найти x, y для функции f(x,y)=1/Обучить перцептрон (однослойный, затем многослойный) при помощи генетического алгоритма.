@@ -1,0 +1,160 @@
+import java.util.Random;
+
+public class Perceptron {
+    private double[] weights;
+    private double learningRate;
+
+    public Perceptron(int inputSize, double learningRate) {
+        weights = new double[inputSize + 1]; // +1 для смещения
+        this.learningRate = learningRate;
+        Random rand = new Random();
+
+        for (int i = 0; i < weights.length; i++) {
+            weights[i] = rand.nextDouble() * 2 - 1; // инициализация весов в диапазоне [-1, 1]
+        }
+    }
+
+    public double predict(double[] inputs) {
+        double sum = weights[0]; // смещение
+        for (int i = 0; i < inputs.length; i++) {
+            sum += weights[i + 1] * inputs[i];
+        }
+        return activationFunction(sum);
+    }
+
+    private double activationFunction(double x) {
+        return x >= 0 ? 1 : 0; // Простой пороговый класс
+    }
+
+    public double[] getWeights() {
+        return weights;
+    }
+
+    public void setWeights(double[] weights) {
+        this.weights = weights;
+    }
+}
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
+public class GeneticAlgorithm {
+    private List<Perceptron> population;
+    private double mutationRate;
+    private double crossoverRate;
+    private int populationSize;
+    private int inputSize;
+
+    public GeneticAlgorithm(int populationSize, int inputSize, double mutationRate, double crossoverRate) {
+        this.populationSize = populationSize;
+        this.inputSize = inputSize;
+        this.mutationRate = mutationRate;
+        this.crossoverRate = crossoverRate;
+        this.population = new ArrayList<>();
+
+        // Инициализация популяции
+        for (int i = 0; i < populationSize; i++) {
+            population.add(new Perceptron(inputSize, 0.1));
+        }
+    }
+
+    public void evolve(double[][] inputs, double[] outputs) {
+        for (int generation = 0; generation < 100; generation++) {
+            evaluateFitness(inputs, outputs);
+            List<Perceptron> newPopulation = new ArrayList<>();
+
+            // Селекция и создание новой популяции
+            while (newPopulation.size() < populationSize) {
+                Perceptron parent1 = selectParent();
+                Perceptron parent2 = selectParent();
+
+                Perceptron child = crossover(parent1, parent2);
+                mutate(child);
+                newPopulation.add(child);
+            }
+            population = newPopulation;
+        }
+    }
+
+    private void evaluateFitness(double[][] inputs, double[] outputs) {
+        for (Perceptron perceptron : population) {
+            double fitness = 0;
+            for (int i = 0; i < inputs.length; i++) {
+                double prediction = perceptron.predict(inputs[i]);
+                fitness += (prediction == outputs[i]) ? 1 : 0;
+            }
+            // Можно сохранить фитнес, если нужно
+        }
+    }
+
+    private Perceptron selectParent() {
+        // Метод селекции, например, турнирная селекция
+        return population.get(new Random().nextInt(populationSize)); // Для упрощения
+    }
+
+    private Perceptron crossover(Perceptron parent1, Perceptron parent2) {
+        double[] childWeights = new double[parent1.getWeights().length];
+        for (int i = 0; i < childWeights.length; i++) {
+            childWeights[i] = (new Random().nextDouble() < crossoverRate) ? parent1.getWeights()[i] : parent2.getWeights()[i];
+        }
+        Perceptron child = new Perceptron(inputSize, 0.1);
+        child.setWeights(childWeights);
+        return child;
+    }
+
+    private void mutate(Perceptron perceptron) {
+        double[] weights = perceptron.getWeights();
+        for (int i = 0; i < weights.length; i++) {
+            if (new Random().nextDouble() < mutationRate) {
+                weights[i] += new Random().nextGaussian() * 0.1; // Добавьте небольшое случайное число
+            }
+        }
+        perceptron.setWeights(weights);
+    }
+}
+import java.util.Random;
+
+public class MultiLayerPerceptron {
+    private double[][][] weights; // [слой][нейрон][вес]
+
+    public MultiLayerPerceptron(int[] layers) {
+        weights = new double[layers.length - 1][][];
+        for (int i = 0; i < weights.length; i++) {
+            weights[i] = new double[layers[i + 1]][layers[i] + 1]; // +1 для смещения
+            Random rand = new Random();
+            for (int j = 0; j < weights[i].length; j++) {
+                for (int k = 0; k < weights[i][j].length; k++) {
+                    weights[i][j][k] = rand.nextDouble() * 2 - 1; // Инициализация в диапазоне [-1, 1]
+                }
+            }
+        }
+    }
+
+    public double[] predict(double[] inputs) {
+        double[] activations = inputs;
+        for (double[][] layerWeights : weights) {
+            double[] newActivations = new double[layerWeights.length];
+            for (int i = 0; i < layerWeights.length; i++) {
+                double sum = layerWeights[i][0]; // смещение
+                for (int j = 1; j < layerWeights[i].length; j++) {
+                    sum += layerWeights[i][j] * activations[j - 1];
+                }
+                newActivations[i] = activationFunction(sum);
+            }
+            activations = newActivations;
+        }
+        return activations;
+    }
+
+    private double activationFunction(double x) {
+        return 1.0 / (1.0 + Math.exp(-x)); // Сигмоида
+    }
+
+    public double[][][] getWeights() {
+        return weights;
+    }
+
+    public void setWeights(double[][][] weights) {
+        this.weights = weights;
+    }
+}
