@@ -1,0 +1,129 @@
+public class FunctionEvaluator {
+    public static double evaluate(double x, double y) {
+        return 1.0 / (1.0 + x * x + y * y);
+    }
+}
+public class Chromosome {
+    public double x;
+    public double y;
+    public double fitness;
+
+    public Chromosome(double x, double y) {
+        this.x = x;
+        this.y = y;
+        this.fitness = FunctionEvaluator.evaluate(x, y);
+    }
+}
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Random;
+
+public class GeneticAlgorithm {
+    private static final int POPULATION_SIZE = 100;
+    private static final double MUTATION_RATE = 0.01;
+    private static final int GENERATIONS = 50;
+
+    // Генерация случайной хромосомы
+    public static Chromosome createRandomChromosome() {
+        Random rand = new Random();
+        double x = rand.nextDouble() * 10 - 5; // x в диапазоне [-5, 5]
+        double y = rand.nextDouble() * 10 - 5; // y в диапазоне [-5, 5]
+        return new Chromosome(x, y);
+    }
+
+    // Элитный отбор
+    public static List<Chromosome> selectElite(List<Chromosome> population) {
+        Collections.sort(population, (c1, c2) -> Double.compare(c2.fitness, c1.fitness));
+        return new ArrayList<>(population.subList(0, population.size() / 2));
+    }
+
+    // Отбор методом рулетки
+    public static List<Chromosome> selectRoulette(List<Chromosome> population) {
+        double totalFitness = population.stream().mapToDouble(c -> c.fitness).sum();
+        List<Chromosome> selected = new ArrayList<>();
+        Random rand = new Random();
+
+        for (int i = 0; i < population.size() / 2; i++) {
+            double randomValue = rand.nextDouble() * totalFitness;
+            double cumulativeFitness = 0.0;
+            for (Chromosome chromosome : population) {
+                cumulativeFitness += chromosome.fitness;
+                if (cumulativeFitness >= randomValue) {
+                    selected.add(chromosome);
+                    break;
+                }
+            }
+        }
+        return selected;
+    }
+
+    // Скрещивание
+    public static Chromosome crossover(Chromosome parent1, Chromosome parent2) {
+        return new Chromosome(
+                (parent1.x + parent2.x) / 2,
+                (parent1.y + parent2.y) / 2
+        );
+    }
+
+    // Мутация
+    public static void mutate(Chromosome chromosome) {
+        Random rand = new Random();
+        if (rand.nextDouble() < MUTATION_RATE) {
+            chromosome.x += rand.nextGaussian();
+            chromosome.y += rand.nextGaussian();
+            // Обновляем фитнес после мутации
+            chromosome.fitness = FunctionEvaluator.evaluate(chromosome.x, chromosome.y);
+        }
+    }
+
+    public static void runAlgorithm(String selectionMethod) {
+        List<Chromosome> population = new ArrayList<>();
+        
+        // Инициализация популяции
+        for (int i = 0; i < POPULATION_SIZE; i++) {
+            population.add(createRandomChromosome());
+        }
+
+        for (int generation = 0; generation < GENERATIONS; generation++) {
+            // Оценка фитнеса
+            for (Chromosome chromosome : population) {
+                chromosome.fitness = FunctionEvaluator.evaluate(chromosome.x, chromosome.y);
+            }
+
+            // Отбор
+            List<Chromosome> selected;
+            if (selectionMethod.equals("elite")) {
+                selected = selectElite(population);
+            } else { // roulette
+                selected = selectRoulette(population);
+            }
+
+            // Создание новой популяции
+            List<Chromosome> newPopulation = new ArrayList<>();
+            for (int i = 0; i < selected.size(); i += 2) {
+                Chromosome parent1 = selected.get(i);
+                Chromosome parent2 = selected.get((i + 1) % selected.size());
+                Chromosome offspring = crossover(parent1, parent2);
+                mutate(offspring);
+                newPopulation.add(offspring);
+            }
+
+            population = newPopulation;
+        }
+
+        // Результаты
+        population.sort((c1, c2) -> Double.compare(c2.fitness, c1.fitness));
+        Chromosome best = population.get(0);
+        System.out.printf("Best solution using %s selection: (x: %.2f, y: %.2f) with fitness: %.4f%n",
+                selectionMethod, best.x, best.y, best.fitness);
+    }
+}
+public class Main {
+    public static void main(String[] args) {
+        System.out.println("Running Genetic Algorithm with Elite Selection:");
+        GeneticAlgorithm.runAlgorithm("elite");
+        System.out.println("Running Genetic Algorithm with Roulette Selection:");
+        GeneticAlgorithm.runAlgorithm("roulette");
+    }
+}
