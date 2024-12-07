@@ -1,0 +1,181 @@
+public class Plant {
+    private double energy;
+
+    public Plant(double initialEnergy) {
+        this.energy = initialEnergy;
+    }
+
+    public double photosynthesize() {
+        // Простая модель фотосинтеза, которая увеличивает энергию растения
+        energy += 1.0;
+        return energy;
+    }
+
+    public double getEnergy() {
+        return energy;
+    }
+}
+public class Herbivore {
+    private double energy;
+    private Perceptron perceptron;
+
+    public Herbivore() {
+        this.energy = 10.0; // начальная энергия
+        this.perceptron = new Perceptron();
+    }
+
+    public void eat(Plant plant) {
+        energy += plant.photosynthesize(); // Травоядное ест растение и получает его энергию
+    }
+
+    // Код для принятия решений на основе перцептрона
+    public void makeDecision() {
+        // Используйте перцептрон для принятия решений, например, искать еду
+    }
+
+    public double getEnergy() {
+        return energy;
+    }
+}
+public class Predator {
+    private double energy;
+    private Perceptron perceptron;
+
+    public Predator() {
+        this.energy = 15.0; // начальная энергия
+        this.perceptron = new Perceptron();
+    }
+
+    public void eat(Herbivore herbivore) {
+        energy += herbivore.getEnergy(); // Хищник ест травоядное и получает его энергию
+    }
+
+    // Код для принятия решений на основе перцептрона
+    public void makeDecision() {
+        // Используйте перцептрон для принятия решений, например, искать жертву
+    }
+
+    public double getEnergy() {
+        return energy;
+    }
+}
+public class Perceptron {
+    private double[] weights;
+    private double threshold;
+
+    public Perceptron() {
+        this.weights = new double[3]; // количество входов (например, энергия, расстояние до еды и т. д.)
+        this.threshold = 0.5; // порог
+    }
+
+    public boolean predict(double[] inputs) {
+        double weightedSum = 0.0;
+
+        for (int i = 0; i < weights.length; i++) {
+            weightedSum += weights[i] * inputs[i];
+        }
+
+        return weightedSum > threshold; // возвращаем true или false
+    }
+}
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
+public class Environment {
+    private List<Plant> plants;
+    private List<Herbivore> herbivores;
+    private List<Predator> predators;
+
+    public Environment() {
+        plants = new ArrayList<>();
+        herbivores = new ArrayList<>();
+        predators = new ArrayList<>();
+    }
+
+    public void addPlant(Plant plant) {
+        plants.add(plant);
+    }
+
+    public void addHerbivore(Herbivore herbivore) {
+        herbivores.add(herbivore);
+    }
+
+    public void addPredator(Predator predator) {
+        predators.add(predator);
+    }
+
+    public void simulate() {
+        // Логика симуляции: растение фотосинтезирует, травоядные едят растения, хищники едят травоядных
+        for (Plant plant : plants) {
+            plant.photosynthesize();
+        }
+
+        for (Herbivore herbivore : herbivores) {
+            if (!plants.isEmpty()) {
+                herbivore.eat(plants.get(0)); // Простой подход: травоядные всегда едят первое растение
+            }
+        }
+
+        for (Predator predator : predators) {
+            if (!herbivores.isEmpty()) {
+                predator.eat(herbivores.get(0)); // Хищники едят первое травоядное
+            }
+        }
+    }
+
+    public List<Plant> getPlants() {
+        return plants;
+    }
+
+    public List<Herbivore> getHerbivores() {
+        return herbivores;
+    }
+
+    public List<Predator> getPredators() {
+        return predators;
+    }
+}
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+public class BioCenosisSimulation extends JFrame {
+    private Environment environment;
+
+    public BioCenosisSimulation() {
+        environment = new Environment();
+        setupUI();
+    }
+
+    private void setupUI() {
+        setSize(800, 600);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setTitle("Биоценоз: Растения, Травоядные и Хищники");
+
+        JButton simulateButton = new JButton("Симуляция");
+        simulateButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                environment.simulate();
+                repaint();
+            }
+        });
+
+        add(simulateButton, BorderLayout.SOUTH);
+    }
+
+    public void paint(Graphics g) {
+        super.paint(g);
+        // Отрисовка нашего биоценоза
+        // Здесь можно добавить логику для отображения растений, травоядных и хищников
+    }
+
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            BioCenosisSimulation simulation = new BioCenosisSimulation();
+            simulation.setVisible(true);
+        });
+    }
+}
