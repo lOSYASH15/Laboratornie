@@ -1,0 +1,50 @@
+Организация функции при помощи искусственного интеллекта "напоминание о поливе цветов"
+
+
+import java.util.*;
+
+public class AIFlowerWateringReminder {
+
+    private Timer timer;
+    private Map<String, Integer> plantWateringFrequency; // Хранит частоту полива для разных растений
+
+    public AIFlowerWateringReminder() {
+        timer = new Timer();
+        plantWateringFrequency = new HashMap<>();
+        setupInitialValues();
+        scheduleReminder();
+    }
+
+    private void setupInitialValues() {
+        // Начальная установка частоты полива для разных растений
+        plantWateringFrequency.put("Роза", 7);       // Полив каждую неделю
+        plantWateringFrequency.put("Кактус", 14);    // Полив раз в две недели
+        // Добавляйте другие растения по мере необходимости
+    }
+
+    private void scheduleReminder() {
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                remindPlants();
+            }
+        }, 0, 1000 * 60 * 60 * 24); // Каждодневное напоминание
+    }
+
+    private void remindPlants() {
+        System.out.println("Напоминание: Проверьте, нужно ли полить ваши цветы!");
+        // Здесь можно добавить логику для взаимодействия с ИИ
+        // Например, собирать данные о состоянии растений
+    }
+
+    public void updateWateringFrequency(String plant, int days) {
+        plantWateringFrequency.put(plant, days);
+        System.out.println("Обновлена частота полива для " + plant + " на " + days + " дней.");
+    }
+
+    public static void main(String[] args) {
+        AIFlowerWateringReminder reminder = new AIFlowerWateringReminder();
+        // Здесь вы можете добавить взаимодействие с пользователем
+        // Например, через консольную команду для обновления напоминаний
+    }
+}
