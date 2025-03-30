@@ -1,0 +1,97 @@
+Описание задачи:
+Разработать систему, способную распознавать растения по фотографиям и предоставлять информацию о их названии. Система должна быть реализована на Java и использовать методы искусственного интеллекта для классификации изображений.
+Пути решения:
+Сбор и подготовка данных:
+Собрать большой набор изображений различных растений с их названиями.
+Разделить набор данных на обучающую и тестовую выборки.
+Выбор модели ИИ:
+Использовать нейронные сети, в частности, свёрточные нейронные сети (CNN), которые хорошо подходят для задач распознавания изображений.
+Обучить модель на подготовленном наборе данных.
+Реализация на Java:
+Использовать библиотеки Java для обработки изображений и нейронных сетей, такие как Weka, Deeplearning4j или OpenCV.
+Реализовать интерфейс для загрузки изображений и отображения результатов распознавания.
+Тестирование и оптимизация:
+Провести тестирование системы на тестовой выборке для оценки точности распознавания.
+Оптимизировать модель и параметры обучения для улучшения результатов.
+Применяемые технологии ИИ:
+Свёрточные нейронные сети (CNN): Для классификации изображений.
+Обработка изображений: Использование библиотек OpenCV или ImageJ для предварительной обработки изображений.
+Машинное обучение: Использование библиотек Weka или Deeplearning4j для реализации и обучения моделей.
+
+java
+import org.deeplearning4j.nn.conf.NeuralNetConfiguration;
+import org.deeplearning4j.nn.conf.layers.ConvolutionLayer;
+import org.deeplearning4j.nn.conf.layers.DenseLayer;
+import org.deeplearning4j.nn.conf.layers.OutputLayer;
+import org.deeplearning4j.nn.conf.layers.SubsamplingLayer;
+import org.deeplearning4j.nn.multilayer.MultiLayerNetwork;
+import org.deeplearning4j.nn.weights.WeightInit;
+import org.nd4j.linalg.activations.Activation;
+import org.nd4j.linalg.api.ndarray.INDArray;
+import org.nd4j.linalg.dataset.api.preprocessor.ImagePreProcessingScaler;
+import org.nd4j.linalg.factory.Nd4j;
+import org.nd4j.linalg.learning.config.Nesterovs;
+import org.nd4j.linalg.lossfunctions.LossFunctions;
+
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
+
+public class PlantRecognition {
+    public static void main(String[] args) throws IOException {
+        // Загрузка изображения
+        BufferedImage image = ImageIO.read(new File("plant_image.jpg"));
+        
+        // Преобразование в INDArray
+        INDArray array = Nd4j.create(image.getHeight(), image.getWidth(), 3);
+        for (int i = 0; i < image.getHeight(); i++) {
+            for (int j = 0; j < image.getWidth(); j++) {
+                int rgb = image.getRGB(j, i);
+                array.putScalar(new int[]{i, j, 0}, (rgb >> 16) & 0xFF); // Red
+                array.putScalar(new int[]{i, j, 1}, (rgb >> 8) & 0xFF); // Green
+                array.putScalar(new int[]{i, j, 2}, rgb & 0xFF); // Blue
+            }
+        }
+        
+        // Создание модели CNN
+        MultiLayerNetwork model = new MultiLayerNetwork(new NeuralNetConfiguration.Builder()
+                .seed(123)
+                .weightInit(WeightInit.XAVIER)
+                .updater(new Nesterovs(0.01))
+                .list()
+                .layer(0, new ConvolutionLayer.Builder(5, 5)
+                        .nIn(3)
+                        .stride(1, 1)
+                        .nOut(20)
+                        .activation(Activation.RELU)
+                        .build())
+                .layer(1, new SubsamplingLayer.Builder(SubsamplingLayer.PoolingType.MAX)
+                        .kernelSize(2, 2)
+                        .stride(2, 2)
+                        .build())
+                .layer(2, new DenseLayer.Builder().nOut(128).activation(Activation.RELU).build())
+                .layer(3, new OutputLayer.Builder(LossFunctions.LossFunction.NEGATIVELOGLIKELIHOOD)
+                        .nOut(10) // Количество классов растений
+                        .activation(Activation.SOFTMAX)
+                        .build())
+                .pretrain(false).backprop(true).build());
+        
+        model.init();
+        
+        // Обучение модели (требуется подготовленный набор данных)
+        // model.fit(dataset);
+        
+        // Распознавание растения
+        INDArray output = model.output(array.reshape(1, image.getHeight(), image.getWidth(), 3));
+        int predictedClass = Nd4j.getBlasWrapper().iamax(output).getInt(0);
+        
+        System.out.println("Распознанный класс растения: " + predictedClass);
+    }
+}
+Описание реализации:
+Загрузка изображения: Используется ImageIO для загрузки изображения в формате BufferedImage.
+Преобразование в INDArray: Преобразование изображения в формат, понятный Deeplearning4j.
+Создание модели CNN: Создание свёрточной нейронной сети с несколькими слоями для классификации изображений.
+Обучение модели: Требуется подготовленный набор данных для обучения модели.
+Распознавание растения: Используется обученная модель для распознавания растения на изображении.
